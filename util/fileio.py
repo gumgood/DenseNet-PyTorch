@@ -26,7 +26,7 @@ class DataUtil:
 
     @classmethod
     def dataloader(cls, mode):
-        assert mode in ['train', 'val', 'test']
+        assert mode in ['test', 'train', 'val', 'train+val']
 
         if args.dataset in ['cifar10']:
             return cls._dataloader_cifar10(mode)
@@ -59,18 +59,20 @@ class DataUtil:
                 transforms.Normalize(mean=mean, std=std, inplace=True)
             ])
 
-        if mode in ['train', 'val']:
+        if mode in ['train', 'val', 'train+val']:
             dataset = datasets.CIFAR10(root=FilePath.data(), train=True, download=True, transform=transform)
         else:
             dataset = datasets.CIFAR10(root=FilePath.data(), train=False, download=True, transform=transform)
 
-        if cls.indices is None:
+        if mode in ['train', 'val'] and cls.indices is None:
             cls.indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls.indices[:-5000]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls.indices[5000:]), batch_size=args.batch_size)
         elif mode == 'val':
-            return DataLoader(Subset(dataset, cls.indices[-5000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls.indices[:5000]), batch_size=args.batch_size)
+        elif mode == 'train+val':
+            return DataLoader(dataset, batch_size=args.batch_size)
         else:
             return DataLoader(dataset, batch_size=args.batch_size)
 
@@ -94,18 +96,20 @@ class DataUtil:
                 transforms.Normalize(mean=mean, std=std, inplace=True)
             ])
 
-        if mode in ['train', 'val']:
+        if mode in ['train', 'val', 'train+val']:
             dataset = datasets.CIFAR100(root=FilePath.data(), train=True, download=True, transform=transform)
         else:
             dataset = datasets.CIFAR100(root=FilePath.data(), train=False, download=True, transform=transform)
 
-        if cls.indices is None:
+        if mode in ['train', 'val'] and cls.indices is None:
             cls.indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls.indices[:-5000]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls.indices[5000:]), batch_size=args.batch_size)
         elif mode == 'val':
-            return DataLoader(Subset(dataset, cls.indices[-5000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls.indices[:5000]), batch_size=args.batch_size)
+        elif mode == 'train+val':
+            return DataLoader(dataset, batch_size=args.batch_size)
         else:
             return DataLoader(dataset, batch_size=args.batch_size)
 
@@ -116,17 +120,19 @@ class DataUtil:
             transforms.ToTensor()
         ])
 
-        if mode in ['train', 'val']:
+        if mode in ['train', 'val', 'train+val']:
             dataset = datasets.SVHN(root=FilePath.data(), split='train', download=True, transform=transform)
         else:
             dataset = datasets.SVHN(root=FilePath.data(), split='test', download=True, transform=transform)
 
-        if cls.indices is None:
+        if mode in ['train', 'val'] and cls.indices is None:
             cls.indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls.indices[:-6000]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls.indices[6000:]), batch_size=args.batch_size)
         elif mode == 'val':
-            return DataLoader(Subset(dataset, cls.indices[-6000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls.indices[:6000]), batch_size=args.batch_size)
+        elif mode == 'train+val':
+            return DataLoader(dataset, batch_size=args.batch_size)
         else:
             return DataLoader(dataset, batch_size=args.batch_size)
