@@ -34,14 +34,14 @@ The default setting is DenseNet with depth L=40 and growth rate k=12 on CIFAR-10
 As an example, the following command trains a DenseNet with depth L=100 and growth rate k=24 on CIFAR-100:
 
 ```
-python train.py --num-layer 100 growth-rate 24 --dataset CIFAR-100
+python train.py --num-layer 100 growth-rate 24 --dataset cifar100
 ```
 
 As another example, the following command trains a DenseNet-BC with depth L=190 and growth rate k=40 on CIFAR-100 with data
 augmentation :
 
 ```
-python train.py --bc --num-layer 190 growth-rate 40 --dataset CIFAR-100+
+python train.py --bc --num-layer 190 growth-rate 40 --dataset cifar100+
 ```
 
 # Citation
