@@ -6,7 +6,7 @@ from net import DenseNet
 
 def model_info():
     # Sample one batch
-    _, test_dataloader = DataUtil.dataloader(mode='test')
+    test_dataloader = DataUtil.dataloader('test')
     images, labels = next(iter(test_dataloader))
 
     # Load model

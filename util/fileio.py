@@ -33,9 +33,9 @@ class DataUtil:
         elif args.dataset in ['cifar10+']:
             return cls._dataloader_cifar10(mode, augment=True)
         elif args.dataset in ['cifar100']:
-            return cls._dataloader_cifar10(mode)
+            return cls._dataloader_cifar100(mode)
         elif args.dataset in ['cifar100+']:
-            return cls._dataloader_cifar10(mode, augment=True)
+            return cls._dataloader_cifar100(mode, augment=True)
         else:
             return cls._dataloader_svhn(mode)
 
