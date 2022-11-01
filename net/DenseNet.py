@@ -12,18 +12,18 @@ class _DenseLayer(nn.Module):
             self.layer.append(nn.ReLU(inplace=True))
             self.layer.append(nn.Conv2d(in_channels, 4 * growth_rate, kernel_size=1, stride=1, padding=0, bias=False))
             if drop_rate > 0.0:
-                self.layer.append(nn.Dropout2d(p=drop_rate, inplace=True))
+                self.layer.append(nn.Dropout2d(p=drop_rate))
             self.layer.append(nn.BatchNorm2d(num_features=4 * growth_rate))
             self.layer.append(nn.ReLU(inplace=True))
             self.layer.append(nn.Conv2d(4 * growth_rate, growth_rate, kernel_size=3, stride=1, padding=1, bias=False))
             if drop_rate > 0.0:
-                self.layer.append(nn.Dropout2d(p=drop_rate, inplace=True))
+                self.layer.append(nn.Dropout2d(p=drop_rate))
         else:
             self.layer.append(nn.BatchNorm2d(num_features=in_channels))
             self.layer.append(nn.ReLU(inplace=True))
             self.layer.append(nn.Conv2d(in_channels, growth_rate, kernel_size=3, stride=1, padding=1, bias=False))
             if drop_rate > 0.0:
-                self.layer.append(nn.Dropout2d(p=drop_rate, inplace=True))
+                self.layer.append(nn.Dropout2d(p=drop_rate))
 
     def forward(self, x):
         return self.layer(x)
@@ -54,7 +54,7 @@ class _TransitionLayer(nn.Module):
         self.layer.append(nn.ReLU(inplace=True))
         self.layer.append(nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=False))
         if drop_rate > 0.0:
-            self.layer.append(nn.Dropout2d(p=drop_rate, inplace=True))
+            self.layer.append(nn.Dropout2d(p=drop_rate))
         self.layer.append(nn.AvgPool2d(kernel_size=2, stride=2))
 
     def forward(self, x):
