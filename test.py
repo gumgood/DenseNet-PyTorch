@@ -5,25 +5,31 @@ from util.fileio import DataUtil, FilePath
 from net import DenseNet
 
 
-def test(dataloader, model, loss_fn):
+def test(dataloader, model, loss_fn, epoch):
     size = len(dataloader.dataset)
-    num_batches = len(dataloader)
 
     model.eval()
-    tot_loss, correct = 0, 0
+    tot_loss, tot_acc = 0, 0
+    print(f'Epoch {epoch}\n--------------------------------')
     with torch.no_grad():
-        for images, labels in dataloader:
-            images, labels = images.to(args.device), labels.to(args.device)
+        for batch, (images, labels) in enumerate(dataloader):
+            images = images.to(args.device)
+            labels = labels.to(args.device)
 
             # Compute test error
             preds = model(images)
             tot_loss += loss_fn(preds, labels).item()
-            correct += (preds.argmax(1) == labels).type(torch.float).sum().item()
-    tot_loss /= num_batches
-    correct /= size
+            tot_acc += (preds.argmax(1) == labels).type(torch.float).sum().item()
 
-    print(f'Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {tot_loss:>8f} \n')
-    return tot_loss, correct
+            if batch % args.print_freq == 0:
+                loss, current = loss.item(), batch * len(images)
+                print(f'loss: {loss:>7f}  [{current:>5d}/{size:>5d}]')
+
+    tot_loss /= size
+    tot_acc /= size
+
+    print(f'Test Error: \n Accuracy: {(100 * tot_acc):>0.1f}%, Avg loss: {tot_loss:>8f} \n')
+    return tot_loss, tot_acc
 
 
 if __name__ == '__main__':

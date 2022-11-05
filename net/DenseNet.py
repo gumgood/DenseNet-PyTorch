@@ -72,7 +72,7 @@ class DenseNet(nn.Module):
             num_layer = num_layer // 2
 
         # First convolution layer
-        num_channels = growth_rate * 2 if args.bc else 16
+        num_channels = growth_rate * 2 if bottleneck else 16
         self.first = nn.Conv2d(3, num_channels, kernel_size=3, stride=1, padding=1, bias=False)
 
         # Dense block 1 and transition layer

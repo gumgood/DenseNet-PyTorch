@@ -7,18 +7,20 @@ from net import DenseNet
 from test import test
 
 
-def train(dataloader, model, loss_fn, optimizer, lr_scheduler):
+def train(dataloader, model, loss_fn, optimizer, epoch):
     size = len(dataloader.dataset)
-    num_batches = len(dataloader)
 
     model.train()
     tot_loss = 0
+    print(f'Epoch {epoch}\n--------------------------------')
     for batch, (images, labels) in enumerate(dataloader):
-        images, labels = images.to(args.device), labels.to(args.device)
+        images = images.to(args.device)
+        labels = labels.to(args.device)
 
         # Compute prediction error
         preds = model(images)
         loss = loss_fn(preds, labels)
+
         tot_loss += loss.item()
 
         # Backpropagation
@@ -30,9 +32,7 @@ def train(dataloader, model, loss_fn, optimizer, lr_scheduler):
             loss, current = loss.item(), batch * len(images)
             print(f'loss: {loss:>7f}  [{current:>5d}/{size:>5d}]')
 
-    lr_scheduler.step()
-
-    tot_loss /= num_batches
+    tot_loss /= size
     return tot_loss
 
 
@@ -52,27 +52,34 @@ if __name__ == '__main__':
     if args.start_epoch:
         path = FilePath.checkpoint(args.start_epoch)
         checkpoint = torch.load(path)
+        args.start_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
         print(f'Loaded PyTorch Model State from {path}')
+    else:
+        args.start_epoch = 1
 
     # 4. Train model
     writer = SummaryWriter(FilePath.tensorboard())
-    for epoch in range(args.start_epoch + 1, args.epochs + 1):
-        print(f'Epoch {epoch}\n--------------------------------')
-        train_loss = train(train_dataloader, model, loss_fn, optimizer, lr_scheduler)
-        val_loss, val_acc = test(val_dataloader, model, loss_fn)
+    for epoch in range(args.start_epoch, args.epochs + 1):
+        train_loss = train(train_dataloader, model, loss_fn, optimizer, epoch)
+        val_loss, val_acc = test(val_dataloader, model, loss_fn, epoch)
+        lr_scheduler.step()
+
         if epoch % args.save_freq == 0 or epoch == args.epochs:
             path = FilePath.checkpoint(epoch=epoch)
-            torch.save({'model_state_dict': model.state_dict(),
+            torch.save({'epoch': epoch,
+                        'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'lr_scheduler_state_dict': lr_scheduler.state_dict()
                         }, path)
             print('Saved PyTorch Model State to', path)
+
         writer.add_scalar('Loss/train', train_loss, epoch)
         writer.add_scalar('Loss/val', val_loss, epoch)
         writer.add_scalar('Acc/val', val_acc, epoch)
         writer.flush()
+
     print('Done!')
     writer.close()

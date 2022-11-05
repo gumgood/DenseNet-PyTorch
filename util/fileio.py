@@ -22,19 +22,19 @@ class FilePath:
 
 
 class DataUtil:
-    indices = None
+    _indices = None
 
     @classmethod
     def dataloader(cls, mode):
         assert mode in ['test', 'train', 'val', 'train+val']
 
-        if args.dataset in ['cifar10']:
+        if args.dataset == 'cifar10':
             return cls._dataloader_cifar10(mode)
-        elif args.dataset in ['cifar10+']:
+        elif args.dataset == 'cifar10+':
             return cls._dataloader_cifar10(mode, augment=True)
-        elif args.dataset in ['cifar100']:
+        elif args.dataset == 'cifar100':
             return cls._dataloader_cifar100(mode)
-        elif args.dataset in ['cifar100+']:
+        elif args.dataset == 'cifar100+':
             return cls._dataloader_cifar100(mode, augment=True)
         else:
             return cls._dataloader_svhn(mode)
@@ -64,13 +64,13 @@ class DataUtil:
         else:
             dataset = datasets.CIFAR10(root=FilePath.data(), train=False, download=True, transform=transform)
 
-        if mode in ['train', 'val'] and cls.indices is None:
-            cls.indices = torch.randperm(len(dataset))
+        if mode in ['train', 'val'] and cls._indices is None:
+            cls._indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls.indices[5000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[5000:]), batch_size=args.batch_size)
         elif mode == 'val':
-            return DataLoader(Subset(dataset, cls.indices[:5000]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[:5000]), batch_size=args.batch_size)
         elif mode == 'train+val':
             return DataLoader(dataset, batch_size=args.batch_size)
         else:
@@ -101,13 +101,13 @@ class DataUtil:
         else:
             dataset = datasets.CIFAR100(root=FilePath.data(), train=False, download=True, transform=transform)
 
-        if mode in ['train', 'val'] and cls.indices is None:
-            cls.indices = torch.randperm(len(dataset))
+        if mode in ['train', 'val'] and cls._indices is None:
+            cls._indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls.indices[5000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[5000:]), batch_size=args.batch_size)
         elif mode == 'val':
-            return DataLoader(Subset(dataset, cls.indices[:5000]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[:5000]), batch_size=args.batch_size)
         elif mode == 'train+val':
             return DataLoader(dataset, batch_size=args.batch_size)
         else:
@@ -125,13 +125,13 @@ class DataUtil:
         else:
             dataset = datasets.SVHN(root=FilePath.data(), split='test', download=True, transform=transform)
 
-        if mode in ['train', 'val'] and cls.indices is None:
-            cls.indices = torch.randperm(len(dataset))
+        if mode in ['train', 'val'] and cls._indices is None:
+            cls._indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls.indices[6000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[6000:]), batch_size=args.batch_size)
         elif mode == 'val':
-            return DataLoader(Subset(dataset, cls.indices[:6000]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[:6000]), batch_size=args.batch_size)
         elif mode == 'train+val':
             return DataLoader(dataset, batch_size=args.batch_size)
         else:
