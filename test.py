@@ -18,7 +18,9 @@ def test(dataloader, model, loss_fn, epoch):
 
             # Compute test error
             preds = model(images)
-            tot_loss += loss_fn(preds, labels).item()
+            loss = loss_fn(preds, labels)
+
+            tot_loss += loss.item() * images.size(0)
             tot_acc += (preds.argmax(1) == labels).type(torch.float).sum().item()
 
             if batch % args.print_freq == 0:
@@ -39,7 +41,7 @@ if __name__ == '__main__':
     # 2. Create model, loss function
     print(f'Model: {FilePath.model_name}')
     model = DenseNet.model().to(args.device)
-    loss_fn = DenseNet.loss_fn()
+    loss_fn = DenseNet.loss_fn().to(args.device)
 
     # 3. Load a checkpoint
     path = FilePath.checkpoint(args.epochs)

@@ -21,7 +21,7 @@ def train(dataloader, model, loss_fn, optimizer, epoch):
         preds = model(images)
         loss = loss_fn(preds, labels)
 
-        tot_loss += loss.item()
+        tot_loss += loss.item() * images.size(0)
 
         # Backpropagation
         optimizer.zero_grad()
@@ -38,13 +38,13 @@ def train(dataloader, model, loss_fn, optimizer, epoch):
 
 if __name__ == '__main__':
     # 1. Data loading
-    train_dataloader = DataUtil.dataloader(mode='train')
-    val_dataloader = DataUtil.dataloader(mode='val')
+    train_dataloader = DataUtil.dataloader(mode='train+val')
+    val_dataloader = DataUtil.dataloader(mode='test')
 
     # 2  Create model, loss function, optimizer and lr scheduler
     print(f'Model: {FilePath.model_name}')
     model = DenseNet.model().to(args.device)
-    loss_fn = DenseNet.loss_fn()
+    loss_fn = DenseNet.loss_fn().to(args.device)
     optimizer = DenseNet.optimizer(model)
     lr_scheduler = DenseNet.lr_scheduler(optimizer)
 

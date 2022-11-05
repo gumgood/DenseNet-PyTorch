@@ -44,19 +44,19 @@ class DataUtil:
         mean = [0.4914, 0.4822, 0.4465]
         std = [0.2470, 0.2435, 0.2616]
 
-        if mode == 'train' and augment:
+        if augment and mode in ['train', 'train+val']:
             transform = transforms.Compose([
                 transforms.Resize(size=32),
                 transforms.RandomCrop(size=32, padding=4),
                 transforms.RandomHorizontalFlip(p=0.5),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=mean, std=std, inplace=True)
+                transforms.Normalize(mean=mean, std=std)
             ])
         else:
             transform = transforms.Compose([
                 transforms.Resize(size=32),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=mean, std=std, inplace=True)
+                transforms.Normalize(mean=mean, std=std)
             ])
 
         if mode in ['train', 'val', 'train+val']:
@@ -68,11 +68,11 @@ class DataUtil:
             cls._indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls._indices[5000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[5000:]), batch_size=args.batch_size, shuffle=True)
         elif mode == 'val':
             return DataLoader(Subset(dataset, cls._indices[:5000]), batch_size=args.batch_size)
         elif mode == 'train+val':
-            return DataLoader(dataset, batch_size=args.batch_size)
+            return DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
         else:
             return DataLoader(dataset, batch_size=args.batch_size)
 
@@ -81,19 +81,19 @@ class DataUtil:
         mean = [0.5071, 0.4865, 0.4409]
         std = [0.2673, 0.2564, 0.2762]
 
-        if mode == 'train' and augment:
+        if augment and mode in ['train', 'train+val']:
             transform = transforms.Compose([
                 transforms.Resize(size=32),
                 transforms.RandomCrop(size=32, padding=4),
                 transforms.RandomHorizontalFlip(p=0.5),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=mean, std=std, inplace=True)
+                transforms.Normalize(mean=mean, std=std)
             ])
         else:
             transform = transforms.Compose([
                 transforms.Resize(size=32),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=mean, std=std, inplace=True)
+                transforms.Normalize(mean=mean, std=std)
             ])
 
         if mode in ['train', 'val', 'train+val']:
@@ -105,11 +105,11 @@ class DataUtil:
             cls._indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls._indices[5000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[5000:]), batch_size=args.batch_size, shuffle=True)
         elif mode == 'val':
             return DataLoader(Subset(dataset, cls._indices[:5000]), batch_size=args.batch_size)
         elif mode == 'train+val':
-            return DataLoader(dataset, batch_size=args.batch_size)
+            return DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
         else:
             return DataLoader(dataset, batch_size=args.batch_size)
 
@@ -129,10 +129,10 @@ class DataUtil:
             cls._indices = torch.randperm(len(dataset))
 
         if mode == 'train':
-            return DataLoader(Subset(dataset, cls._indices[6000:]), batch_size=args.batch_size)
+            return DataLoader(Subset(dataset, cls._indices[6000:]), batch_size=args.batch_size, shuffle=True)
         elif mode == 'val':
             return DataLoader(Subset(dataset, cls._indices[:6000]), batch_size=args.batch_size)
         elif mode == 'train+val':
-            return DataLoader(dataset, batch_size=args.batch_size)
+            return DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
         else:
             return DataLoader(dataset, batch_size=args.batch_size)
