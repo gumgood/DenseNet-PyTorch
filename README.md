@@ -44,7 +44,20 @@ augmentation :
 python train.py --bc --num-layer 190 growth-rate 40 --dataset cifar100+
 ```
 
-# Citation
+## Result
+
+Error rates (%) on CIFAR and SVHN dataset.
+
+| **Method**  | **Depth** | **Growth Rate** | **C10** | **C10+** | **C100** | **C100+** | **SVHN** |
+|-------------|-----------|-----------------|---------|----------|----------|-----------|----------|
+| DenseNet    | L=40      | k=12            | 8.45    | 5.63     | -        | -         | -        |
+| DenseNet    | L=100     | k=12            | -       | -        | -        | -         | -        |
+| DenseNet    | L=100     | k=24            | -       | -        | -        | -         | -        |
+| DenseNet-BC | L=100     | k=12            | 7.76    | 4.80     | -        | -         | -        |
+| DenseNet-BC | L=250     | k=24            | -       | -        | -        | -         | -        |
+| DenseNet-BC | L=190     | k=40            | -       | -        | -        | -         | -        |
+
+## Citation
 
 If you use this work, please cite:
 
