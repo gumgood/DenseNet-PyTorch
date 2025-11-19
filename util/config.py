@@ -14,9 +14,8 @@ _parser.add_argument('--growth-rate', type=int, default=12)
 # Training options
 _parser.add_argument('--batch-size', type=int, default=64)
 _parser.add_argument('--epochs', type=int, default=300)
-_parser.add_argument('--start-epoch', type=int, default=0)
 _parser.add_argument('--print-freq', type=int, default=100)
-_parser.add_argument('--save-freq', type=int, default=10)
+_parser.add_argument('--resume-from-run-id', type=str, default=None, help='MLflow run ID to resume training from')
 
 # Optimization options
 _parser.add_argument('--lr', type=float, default=0.1)

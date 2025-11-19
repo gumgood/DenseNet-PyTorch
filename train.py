@@ -1,5 +1,7 @@
 import torch
-from torch.utils.tensorboard import SummaryWriter
+import mlflow
+import mlflow.pytorch
+import os
 
 from util.config import args
 from util.fileio import DataUtil, FilePath
@@ -37,49 +39,65 @@ def train(dataloader, model, loss_fn, optimizer, epoch):
 
 
 if __name__ == '__main__':
-    # 1. Data loading
-    train_dataloader = DataUtil.dataloader(mode='train+val')
-    val_dataloader = DataUtil.dataloader(mode='test')
+    # Set MLflow experiment
+    mlflow.set_experiment(FilePath.model_name)
 
-    # 2  Create model, loss function, optimizer and lr scheduler
-    print(f'Model: {FilePath.model_name}')
-    model = DenseNet.model().to(args.device)
-    loss_fn = DenseNet.loss_fn().to(args.device)
-    optimizer = DenseNet.optimizer(model)
-    lr_scheduler = DenseNet.lr_scheduler(optimizer)
+    with mlflow.start_run():
+        # Log hyperparameters
+        mlflow.log_params(vars(args))
 
-    # 3. Load checkpoint
-    if args.start_epoch:
-        path = FilePath.checkpoint(args.start_epoch)
-        checkpoint = torch.load(path)
-        args.start_epoch = checkpoint['epoch']
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
-        print(f'Loaded PyTorch Model State from {path}')
-    else:
-        args.start_epoch = 1
+        # 1. Data loading
+        train_dataloader = DataUtil.dataloader(mode='train+val')
+        val_dataloader = DataUtil.dataloader(mode='test')
 
-    # 4. Train model
-    writer = SummaryWriter(FilePath.tensorboard())
-    for epoch in range(args.start_epoch, args.epochs + 1):
-        train_loss = train(train_dataloader, model, loss_fn, optimizer, epoch)
-        val_loss, val_acc = test(val_dataloader, model, loss_fn, epoch)
-        lr_scheduler.step()
+        # 2. Create model, loss function, optimizer and lr scheduler
+        print(f'Model: {FilePath.model_name}')
+        model = DenseNet.model().to(args.device)
+        loss_fn = DenseNet.loss_fn().to(args.device)
+        optimizer = DenseNet.optimizer(model)
+        lr_scheduler = DenseNet.lr_scheduler(optimizer)
 
-        if epoch % args.save_freq == 0 or epoch == args.epochs:
-            path = FilePath.checkpoint(epoch=epoch)
-            torch.save({'epoch': epoch,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'lr_scheduler_state_dict': lr_scheduler.state_dict()
-                        }, path)
-            print('Saved PyTorch Model State to', path)
+        # 3. Resume from a previous run if specified
+        if args.resume_from_run_id:
+            print(f"Resuming training from MLflow run: {args.resume_from_run_id}")
+            run_uri = f"runs:/{args.resume_from_run_id}"
 
-        writer.add_scalar('Loss/train', train_loss, epoch)
-        writer.add_scalar('Loss/val', val_loss, epoch)
-        writer.add_scalar('Acc/val', val_acc, epoch)
-        writer.flush()
+            # Restore model
+            model = mlflow.pytorch.load_model(f"{run_uri}/model")
 
-    print('Done!')
-    writer.close()
+            # Restore optimizer
+            optimizer_path = mlflow.artifacts.download_artifacts(artifact_uri=f"{run_uri}/checkpoints/optimizer.pth")
+            optimizer.load_state_dict(torch.load(optimizer_path))
+            os.remove(optimizer_path)
+
+
+            # Restore scheduler
+            scheduler_path = mlflow.artifacts.download_artifacts(artifact_uri=f"{run_uri}/checkpoints/lr_scheduler.pth")
+            lr_scheduler.load_state_dict(torch.load(scheduler_path))
+            os.remove(scheduler_path)
+
+        # 4. Train model
+        for epoch in range(1, args.epochs + 1):
+            train_loss = train(train_dataloader, model, loss_fn, optimizer, epoch)
+            val_loss, val_acc = test(val_dataloader, model, loss_fn, epoch)
+            lr_scheduler.step()
+
+            # Log metrics
+            mlflow.log_metric('Loss/train', train_loss, step=epoch)
+            mlflow.log_metric('Loss/val', val_loss, step=epoch)
+            mlflow.log_metric('Acc/val', val_acc, step=epoch)
+
+        # Log the trained model
+        mlflow.pytorch.log_model(model, "model")
+
+        # Save and log optimizer and scheduler states
+        torch.save(optimizer.state_dict(), "optimizer.pth")
+        mlflow.log_artifact("optimizer.pth", "checkpoints")
+        os.remove("optimizer.pth")
+
+        torch.save(lr_scheduler.state_dict(), "lr_scheduler.pth")
+        mlflow.log_artifact("lr_scheduler.pth", "checkpoints")
+        os.remove("lr_scheduler.pth")
+
+
+        print('Done!')
